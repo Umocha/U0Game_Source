@@ -1,0 +1,2 @@
+#include "U0GameplayAbilityTargetData_SingleTarget.h"
+#include UE_INLINE_GENERATED_CPP_BY_NAME(U0GameplayAbilityTargetData_SingleTarget)
