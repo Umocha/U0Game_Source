@@ -91,6 +91,7 @@ void UU0PartyManagementComponent::SetPartyList(TArray<const UU0CharacterData*> N
 	PartyEntries.AddDefaulted(NumSlots);
 
 
+	// 기본 Spawn 위치값
 	FTransform PawnTransform;
 	if (AU0PlayerController* U0PC = U0PlayerController.Get())
 	{
@@ -104,6 +105,7 @@ void UU0PartyManagementComponent::SetPartyList(TArray<const UU0CharacterData*> N
 		}
 	}
 
+	// 현재 List와 비교해서 같은 캐릭터가 있거나 위치만 바꿔야 할 경우 최적화
 	for (int32 SlotIndex = 0; SlotIndex < NewPartyList.Num(); SlotIndex++)
 	{
 		for (int32 RemoveSlotIndex = 0; RemoveSlotIndex < RemoveEntries.Num(); RemoveSlotIndex++)
@@ -139,12 +141,13 @@ void UU0PartyManagementComponent::SetPartyList(TArray<const UU0CharacterData*> N
 
 	OnRep_Entries();
 
-
+	// Despawn되야할 CharacterList
 	for (FPartyEntry& RemoveEntry : RemoveEntries)
 	{
 		DestroyEntry(RemoveEntry);
 	}
 
+	// 죽어있는 캐릭터가 Party에 지정된 경우
 	if (UU0HealthComponent* HealthComponent = UU0HealthComponent::FindHealthComponent(PartyEntries[0].SpawnedPawn))
 	{
 		if (HealthComponent->GetDeathState() != EU0DeathState::NotDead)
@@ -154,6 +157,7 @@ void UU0PartyManagementComponent::SetPartyList(TArray<const UU0CharacterData*> N
 		}
 	}
 
+	// 캐릭터 Activate
 	if (PartyEntries[ActiveSlotIndex].SpawnedPawn != nullptr)
 	{
 		ActivateIndex(ActiveSlotIndex);
@@ -179,11 +183,13 @@ FPartyEntry UU0PartyManagementComponent::SpawnEntry(const UU0CharacterData* Char
 	FTransform SpawnTransform;
 	if (AU0Character* SpawnedPawn = GetWorld()->SpawnActor<AU0Character>(CharacterData->PawnClass, SpawnTransform, SpawnInfo))
 	{
+		// Spawn 해주면서 별도 초기화 작업
 		if (UU0PawnExtensionComponent* PawnExtComp = UU0PawnExtensionComponent::FindPawnExtensionComponent(SpawnedPawn))
 		{
 			PawnExtComp->SetPawnData(CharacterData);
 		}
 
+		// 캐릭터가 죽을 경우 Event Bind
 		SpawnedPawn->HealthComponent->OnDeathStarted.AddDynamic(this, &ThisClass::OnDeathStarted);
 		SpawnedPawn->HealthComponent->OnDeathFinished.AddDynamic(this, &ThisClass::OnDeathFinished);
 
@@ -198,7 +204,6 @@ FPartyEntry UU0PartyManagementComponent::SpawnEntry(const UU0CharacterData* Char
 
 void UU0PartyManagementComponent::DestroyEntry(FPartyEntry& Entry)
 {
-	// TODO: U0 - Ability 삭제
 	if (Entry.SpawnedPawn != nullptr)
 	{
 		Entry.SpawnedPawn->Destroy();
@@ -208,19 +213,21 @@ void UU0PartyManagementComponent::DestroyEntry(FPartyEntry& Entry)
 
 void UU0PartyManagementComponent::SetSlotEntry(FPartyEntry& Entry, int32 Index)
 {
+	// 유효 체크
 	if (Entry.SpawnedPawn == nullptr)
 	{
 		return;
 	}
 	PartyEntries[Index] = Entry;
 
+	// 캐릭터에도 지정된 SlotNum 넘겨준다.
 	if (AU0Character* Character = Cast<AU0Character>(Entry.SpawnedPawn))
 	{
 		Character->SetSlotIndex(Index);
 	}
 
 
-
+	// Slot에 캐릭터가 Set되면 기존 Slot Ability Clear 후, 캐릭터가 가지고 있는 AbilitySet을 통해 GiveAbility
 	if(UU0AbilitySystemComponent* U0ASC = U0AbilitySystemComponent.Get())
 	{
 		U0ASC->ClearAllAbilitiesWithInputID(Index);
@@ -247,7 +254,6 @@ void UU0PartyManagementComponent::SetActivePartyIndex(int32 NewIndex, bool Ignor
 	{
 		return;
 	}
-	// TODO :U0 로직은 나중에 조금 고치자 SetActivate를 Outro/Intro안에서 해줘야 할거 같다
 	
 	FVector ActorLocaion = FVector::ZeroVector;
 	FRotator ActorRotation;
@@ -437,9 +443,11 @@ void UU0PartyManagementComponent::OutroActiveCharacter()
 	{
 		U0ASC->RemoveLooseGameplayTag(U0GameplayTags::GameplayEvent_Intro_Possibility);
 
+		// 전투 중인지 확인
 		if (U0ASC->HasMatchingGameplayTag(U0GameplayTags::Status_InCombat))
 		{
 			const UU0HeroSkillSetBase* SkillSet = U0ASC->GetSkillSet(ActiveSlotIndex);
+			// 협주 게이지 확인
 			if (SkillSet->GetConcertoEnergy() == SkillSet->GetMaxConcertoEnergy())
 			{
 				U0ASC->SetNumericAttributeBase(SkillSet->GetConcertoEnergyAttribute(), 0);
@@ -520,7 +528,7 @@ void UU0PartyManagementComponent::OnDeathFinished(AActor* OwningActor)
 		}
 	}
 	
-	// TODO : U0 Respawn UI
+	// Team 전멸 Respawn UI
 	DeactivateIndex(ActiveSlotIndex);
 	if (UU0AbilitySystemComponent* U0ASC = U0AbilitySystemComponent.Get())
 	{

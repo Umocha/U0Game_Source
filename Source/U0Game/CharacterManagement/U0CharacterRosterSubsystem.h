@@ -46,5 +46,6 @@ public:
 	// 캐릭터 목록
 	TArray<TObjectPtr<UU0CharacterData>> OwnedCharacters;
 
+	// 현재 선택된 PartyEntries
 	TArray<FName> CurrentPartyEntries;
 };

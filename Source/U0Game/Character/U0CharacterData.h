@@ -26,8 +26,8 @@ struct FCharacterAttributeData
 };
 
 
-/**FCharacterAttributeData
- * 
+/**
+ * FCharacterAttributeData
  */
 UCLASS(BlueprintType)
 class U0GAME_API UU0CharacterData : public UU0PawnData
@@ -38,12 +38,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "U0|Attributes")
 	FCharacterAttributeData CharacterAttributeData;
 
+	// 캐릭터 UI Icon에 사용될 정보
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "U0|Icon")
 	FSlateBrush CharacterBrush;
 
+	// 캐릭터 Skill Icon에 사용될 정보
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "U0|Icon")
 	FSlateBrush SkillBrush;
 
+	// 캐릭터 Ultimate Skill Icon에 사용될 정보
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "U0|Icon")
 	FSlateBrush UltimateBrush;
 };
