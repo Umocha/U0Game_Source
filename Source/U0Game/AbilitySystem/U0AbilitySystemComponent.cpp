@@ -179,6 +179,7 @@ void UU0AbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag InputT
 			// Ability가 존재하고, DynamicAbilityTags에 InputTag와 같은게 있을경우, Pressed/Held에 추가 Ability 처리 대기
 			if (AbilitySpec.Ability && (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag)))
 			{
+				// InputID에 등록된 Index가 현재 Index와 같거나 None일 경우에만 처리
 				if (AbilitySpec.InputID == INDEX_NONE || AbilitySpec.InputID == ActiveIndex)
 				{
 					InputPressedSpecHandles.AddUnique(AbilitySpec.Handle);
